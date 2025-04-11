@@ -8,6 +8,8 @@ import Dashboard from './pages/Dashboard';
 import Home from './pages/Home';
 import Unauthorized from './pages/Unauthorized';
 import Layout from './components/Layout';
+import { Category } from '@mui/icons-material';
+import Categories from './pages/Categories';
 
 function App() {
   return (
@@ -28,6 +30,9 @@ function App() {
             {/* Protected routes */}
             <Route element={<ProtectedRoute roles={['product_manager', 'super_admin']} />}>
               <Route path="dashboard" element={<Dashboard />} />
+            </Route>
+            <Route element={<ProtectedRoute roles={['product_manager', 'super_admin']} />}>
+              <Route path="category" element={<Categories />} />
             </Route>
             
             <Route element={<ProtectedRoute roles={['super_admin']} />}>

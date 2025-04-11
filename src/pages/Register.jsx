@@ -84,7 +84,6 @@ const Register = () => {
             Join our gaming community and discover amazing games
           </Typography>
         </Box>
-        
         {error && (
           <Alert severity="error" sx={{ width: '100%', mb: 3 }}>
             {error}
