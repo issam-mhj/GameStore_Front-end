@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   Box,
   Typography,
@@ -7,36 +7,22 @@ import {
   Divider,
   Avatar,
   Stack,
+  Paper,
+  Tooltip
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
+import DeleteIcon from '@mui/icons-material/Delete';
+import CloseIcon from '@mui/icons-material/Close';
+import ShoppingCartCheckoutIcon from '@mui/icons-material/ShoppingCartCheckout';
 
-const produitsInitiaux = [
-  {
-    id: 1,
-    nom: 'Produit 1',
-    prix: 29.99,
-    quantite: 10,
-    image: 'https://i.imgur.com/x4QHkKZ.jpeg',
-  },
-  {
-    id: 2,
-    nom: 'Produit 2',
-    prix: 39.99,
-    quantite: 5,
-    image: 'https://i.imgur.com/U3p7kEM.jpeg',
-  },
-  {
-    id: 3,
-    nom: 'Produit 3',
-    prix: 49.99,
-    quantite: 8,
-    image: 'https://i.imgur.com/XbPhklE.jpeg',
-  },
-];
+export default function Panier({ initialProducts = [], onClose, setCartItems }) {
+  const [produits, setProduits] = React.useState(initialProducts);
 
-export default function Panier() {
-  const [produits, setProduits] = useState(produitsInitiaux);
+  // Update when initialProducts changes
+  React.useEffect(() => {
+    setProduits(initialProducts);
+  }, [initialProducts]);
 
   const totalArticles = produits.reduce((acc, p) => acc + p.quantite, 0);
   const sousTotal = produits.reduce((acc, p) => acc + p.prix * p.quantite, 0);
@@ -44,65 +30,139 @@ export default function Panier() {
   const total = sousTotal + tva;
 
   const changerQuantite = (id, delta) => {
-    setProduits((prev) =>
-      prev.map((p) =>
-        p.id === id ? { ...p, quantite: Math.max(0, p.quantite + delta) } : p
-      )
+    const updatedProducts = produits.map((p) =>
+      p.id === id 
+        ? { ...p, quantite: Math.max(1, p.quantite + delta) } 
+        : p
     );
+    setProduits(updatedProducts);
+    setCartItems(updatedProducts);
+  };
+
+  const supprimerProduit = (id) => {
+    const updatedProducts = produits.filter(p => p.id !== id);
+    setProduits(updatedProducts);
+    setCartItems(updatedProducts);
   };
 
   return (
-    <Box sx={{ p: 3, maxWidth: 400 }}>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-        <Typography variant="h6">Votre panier ({totalArticles} articles)</Typography>
-        <Button size="small">✕</Button>
-      </Box>
-
-      {produits.map((produit) => (
-        <Box key={produit.id} mb={2}>
-          <Stack direction="row" spacing={2} alignItems="center">
-            <Avatar src={produit.image} variant="rounded" sx={{ width: 64, height: 64 }} />
-            <Box flexGrow={1}>
-              <Typography fontWeight="bold">{produit.nom}</Typography>
-              <Typography color="text.secondary">
-                {produit.prix.toFixed(2)}€
-              </Typography>
-            </Box>
-            <Box display="flex" alignItems="center">
-              <IconButton onClick={() => changerQuantite(produit.id, -1)}>
-                <RemoveIcon />
-              </IconButton>
-              <Typography mx={1}>{produit.quantite}</Typography>
-              <IconButton onClick={() => changerQuantite(produit.id, 1)}>
-                <AddIcon />
-              </IconButton>
-            </Box>
-          </Stack>
+    <Paper sx={{ width: 350, height: '100%', overflow: 'auto' }}>
+      <Box sx={{ p: 3 }}>
+        <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+          <Typography variant="h6" fontWeight="bold">
+            <ShoppingCartCheckoutIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
+            Votre panier ({totalArticles})
+          </Typography>
+          <IconButton onClick={onClose} size="small">
+            <CloseIcon />
+          </IconButton>
         </Box>
-      ))}
 
-      <Divider sx={{ my: 2 }} />
+        {produits.length === 0 ? (
+          <Box textAlign="center" py={5}>
+            <Typography color="text.secondary">Votre panier est vide</Typography>
+          </Box>
+        ) : (
+          <>
+            {produits.map((produit) => (
+              <Box 
+                key={produit.id} 
+                mb={2}
+                sx={{
+                  p: 2,
+                  borderRadius: 1,
+                  backgroundColor: '#f8f9fa',
+                  transition: 'all 0.2s',
+                  '&:hover': { backgroundColor: '#f0f0f0' }
+                }}
+              >
+                <Stack direction="row" spacing={2} alignItems="center">
+                  <Avatar 
+                    src={produit.image} 
+                    variant="rounded" 
+                    sx={{ width: 64, height: 64 }} 
+                  />
+                  <Box flexGrow={1}>
+                    <Typography fontWeight="bold">{produit.nom}</Typography>
+                    <Typography color="primary.main" fontWeight="medium">
+                      {produit.prix.toFixed(2)}€
+                    </Typography>
+                  </Box>
+                  <Box>
+                    <Box display="flex" alignItems="center" mb={1}>
+                      <IconButton 
+                        onClick={() => changerQuantite(produit.id, -1)}
+                        size="small"
+                        sx={{ backgroundColor: '#e0e0e0' }}
+                      >
+                        <RemoveIcon fontSize="small" />
+                      </IconButton>
+                      <Typography mx={1} fontWeight="medium">{produit.quantite}</Typography>
+                      <IconButton 
+                        onClick={() => changerQuantite(produit.id, 1)}
+                        size="small"
+                        sx={{ backgroundColor: '#e0e0e0' }}
+                      >
+                        <AddIcon fontSize="small" />
+                      </IconButton>
+                    </Box>
+                    <Tooltip title="Supprimer">
+                      <IconButton 
+                        onClick={() => supprimerProduit(produit.id)} 
+                        size="small"
+                        color="error"
+                      >
+                        <DeleteIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                  </Box>
+                </Stack>
+              </Box>
+            ))}
 
-      <Box display="flex" justifyContent="space-between">
-        <Typography>Sous-total</Typography>
-        <Typography>{sousTotal.toFixed(2)}€</Typography>
-      </Box>
-      <Box display="flex" justifyContent="space-between">
-        <Typography>TVA (20%)</Typography>
-        <Typography>{tva.toFixed(2)}€</Typography>
-      </Box>
-      <Box display="flex" justifyContent="space-between" mt={2}>
-        <Typography fontWeight="bold">Total</Typography>
-        <Typography fontWeight="bold">{total.toFixed(2)}€</Typography>
-      </Box>
+            <Divider sx={{ my: 3 }} />
 
-      <Button
-        variant="contained"
-        fullWidth
-        sx={{ mt: 3, backgroundColor: '#0d1117', color: '#fff' }}
-      >
-        Passer la commande
-      </Button>
-    </Box>
+            <Box sx={{ px: 2 }}>
+              <Box display="flex" justifyContent="space-between" mb={1}>
+                <Typography>Sous-total</Typography>
+                <Typography>{sousTotal.toFixed(2)}€</Typography>
+              </Box>
+              <Box display="flex" justifyContent="space-between" mb={1}>
+                <Typography>TVA (20%)</Typography>
+                <Typography>{tva.toFixed(2)}€</Typography>
+              </Box>
+              <Box 
+                display="flex" 
+                justifyContent="space-between" 
+                mt={2}
+                py={1}
+                sx={{ borderTop: '1px dashed #ccc', borderBottom: '1px dashed #ccc' }}
+              >
+                <Typography fontWeight="bold">Total</Typography>
+                <Typography fontWeight="bold" color="primary.main">{total.toFixed(2)}€</Typography>
+              </Box>
+
+              <Button
+                variant="contained"
+                fullWidth
+                sx={{ 
+                  mt: 4, 
+                  mb: 2,
+                  py: 1.5,
+                  backgroundColor: '#0d1117', 
+                  color: '#fff',
+                  '&:hover': {
+                    backgroundColor: '#1a2536'
+                  }
+                }}
+                endIcon={<ShoppingCartCheckoutIcon />}
+              >
+                Passer la commande
+              </Button>
+            </Box>
+          </>
+        )}
+      </Box>
+    </Paper>
   );
 }
