@@ -13,6 +13,8 @@ import Categories from './pages/Categories';
 import Products from './pages/Products';
 import AddProducts from './pages/AddProducts';
 
+import PanierSideBar from './components/PanierSideBar';
+import Card from './components/MyCard';
 function App() {
   return (
     <Router>
@@ -35,6 +37,16 @@ function App() {
             </Route>
             <Route element={<ProtectedRoute roles={['product_manager', 'super_admin']} />}>
               <Route path="category" element={<Categories />} />
+            </Route>
+            
+            <Route element={<ProtectedRoute roles={['super_admin']} />}>
+              <Route path="categories" element={<div>Categories Management</div>} />
+            </Route>
+            <Route element={<ProtectedRoute roles={['super_admin']} />}>
+              <Route path="panier" element={<PanierSideBar/>} />
+            </Route>
+            <Route element={<ProtectedRoute roles={['super_admin']} />}>
+              <Route path="card" element={<Card/>} />
             </Route>
             
             <Route element={<ProtectedRoute roles={['product_manager', 'super_admin']} />}>
