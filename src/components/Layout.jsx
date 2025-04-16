@@ -157,9 +157,7 @@ const Layout = () => {
 
             {/* Cart & User Menu */}
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <IconButton color="inherit" component={Link} to="/cart" sx={{ mr: 1 }}>
-                <ShoppingCartIcon />
-              </IconButton>
+             
 
               {isAuthenticated ? (
                 <Box sx={{ flexGrow: 0 }}>
