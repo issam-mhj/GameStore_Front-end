@@ -8,10 +8,9 @@ import Dashboard from './pages/Dashboard';
 import Home from './pages/Home';
 import Unauthorized from './pages/Unauthorized';
 import Layout from './components/Layout';
-import { Category } from '@mui/icons-material';
 import Categories from './pages/Categories';
-import PanierSideBar from './components/PanierSideBar';
-import Card from './components/MyCard';
+import Products from './pages/Products';
+import ProductGrid from './pages/ProductLists';
 function App() {
   return (
     <Router>
@@ -35,19 +34,12 @@ function App() {
             <Route element={<ProtectedRoute roles={['product_manager', 'super_admin']} />}>
               <Route path="category" element={<Categories />} />
             </Route>
-            
-            <Route element={<ProtectedRoute roles={['super_admin']} />}>
-              <Route path="categories" element={<div>Categories Management</div>} />
-            </Route>
-            <Route element={<ProtectedRoute roles={['super_admin']} />}>
-              <Route path="panier" element={<PanierSideBar/>} />
-            </Route>
-            <Route element={<ProtectedRoute roles={['super_admin']} />}>
-              <Route path="card" element={<Card/>} />
+            <Route element={<ProtectedRoute roles={['client']} />}>
+              <Route path="productlist" element={<ProductGrid/>} />
             </Route>
             
             <Route element={<ProtectedRoute roles={['product_manager', 'super_admin']} />}>
-              <Route path="products" element={<div>Products Management</div>} />
+              <Route path="products" element={<Products/>} />
             </Route>
           </Route>
           <Route path="*" element={<div>404</div>} />
