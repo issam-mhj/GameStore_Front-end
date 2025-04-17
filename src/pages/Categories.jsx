@@ -22,8 +22,6 @@ const Categories = () => {
     message: '',
     severity: 'success'
   });
-
-  // Fetch categories on component mount
   useEffect(() => {
     fetchCategories();
   }, []);
