@@ -1,11 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Outlet, Link } from 'react-router-dom';
-import { 
-  AppBar, 
-  Toolbar, 
-  Typography, 
-  Button, 
-  Container, 
+import {
+  AppBar,
+  Toolbar,
+  Typography,
+  Button,
+  Container,
   Box,
   IconButton,
   Avatar,
@@ -13,7 +13,7 @@ import {
   MenuItem,
   Tooltip,
   useTheme,
-  useMediaQuery
+  useMediaQuery,
 } from '@mui/material';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
@@ -24,201 +24,196 @@ const Layout = () => {
   const { user, isAuthenticated, logout } = useAuth();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  
-  const [anchorElNav, setAnchorElNav] = React.useState(null);
-  const [anchorElUser, setAnchorElUser] = React.useState(null);
 
-  const handleOpenNavMenu = (event) => {
-    setAnchorElNav(event.currentTarget);
-  };
-  
-  const handleOpenUserMenu = (event) => {
-    setAnchorElUser(event.currentTarget);
-  };
+  const [anchorNav, setAnchorNav] = useState(null);
+  const [anchorUser, setAnchorUser] = useState(null);
 
-  const handleCloseNavMenu = () => {
-    setAnchorElNav(null);
-  };
+  const handleOpenNav = (e) => setAnchorNav(e.currentTarget);
+  const handleCloseNav = () => setAnchorNav(null);
+  const handleOpenUser = (e) => setAnchorUser(e.currentTarget);
+  const handleCloseUser = () => setAnchorUser(null);
 
-  const handleCloseUserMenu = () => {
-    setAnchorElUser(null);
-  };
+  const navLinks = [
+    { label: 'Produits', to: '/products' },
+    { label: 'Catégories', to: '/categories' },
+    { label: 'Offres', to: '/offers' },
+  ];
 
-  const handleLogout = () => {
-    logout();
-    handleCloseUserMenu();
-  };
+  if (user?.roles?.some(r => ['super_admin', 'product_manager', 'user_manager'].includes(r))) {
+    navLinks.push({ label: 'Commandes', to: '/commandes' });
+  }
+  if (user?.roles?.includes('super_admin')) {
+    navLinks.push({ label: 'Users', to: '/users' });
+    navLinks.push({ label: 'Roles', to: '/roles' });
+  }
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <AppBar position="sticky" sx={{ backgroundColor: '#0d1117' }}>
         <Container maxWidth="xl">
           <Toolbar disableGutters>
-            {/* Desktop Logo */}
+            {/* Logo */}
             <Typography
-              variant="h6"
-              noWrap
               component={Link}
               to="/"
+              variant="h6"
+              noWrap
               sx={{
                 mr: 2,
-                display: { xs: 'none', md: 'flex' },
-                fontWeight: 700,
                 color: 'inherit',
                 textDecoration: 'none',
-              }}
-            >
-              E-COMMERCE
-            </Typography>
-
-            {/* Mobile Menu */}
-            <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>
-              <IconButton
-                size="large"
-                aria-controls="menu-appbar"
-                aria-haspopup="true"
-                onClick={handleOpenNavMenu}
-                color="inherit"
-              >
-                <MenuIcon />
-              </IconButton>
-              <Menu
-                id="menu-appbar"
-                anchorEl={anchorElNav}
-                anchorOrigin={{
-                  vertical: 'bottom',
-                  horizontal: 'left',
-                }}
-                keepMounted
-                transformOrigin={{
-                  vertical: 'top',
-                  horizontal: 'left',
-                }}
-                open={Boolean(anchorElNav)}
-                onClose={handleCloseNavMenu}
-                sx={{
-                  display: { xs: 'block', md: 'none' },
-                }}
-              >
-                <MenuItem onClick={handleCloseNavMenu} component={Link} to="/products">
-                  <Typography textAlign="center">Produits</Typography>
-                </MenuItem>
-                <MenuItem onClick={handleCloseNavMenu} component={Link} to="/categories">
-                  <Typography textAlign="center">Catégories</Typography>
-                </MenuItem>
-                <MenuItem onClick={handleCloseNavMenu} component={Link} to="/offers">
-                  <Typography textAlign="center">Offres</Typography>
-                </MenuItem>
-              </Menu>
-            </Box>
-
-            {/* Mobile Logo */}
-            <Typography
-              variant="h6"
-              noWrap
-              component={Link}
-              to="/"
-              sx={{
-                mr: 2,
                 display: { xs: 'flex', md: 'none' },
                 flexGrow: 1,
                 fontWeight: 700,
-                color: 'inherit',
-                textDecoration: 'none',
               }}
             >
               E-COMMERCE
             </Typography>
 
-            {/* Desktop Menu */}
-            <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
-              <Button
-                component={Link}
-                to="/products"
-                sx={{ my: 2, color: 'white', display: 'block' }}
-              >
-                Produits
-              </Button>
-              <Button
-                component={Link}
-                to="/categories"
-                sx={{ my: 2, color: 'white', display: 'block' }}
-              >
-                Catégories
-              </Button>
-              <Button
-                component={Link}
-                to="/offers"
-                sx={{ my: 2, color: 'white', display: 'block' }}
-              >
-                Offres
-              </Button>
-            </Box>
+            {/* Mobile nav */}
+            {isMobile && (
+              <>
+                <IconButton color="inherit" onClick={handleOpenNav}>
+                  <MenuIcon />
+                </IconButton>
+                <Menu
+                  anchorEl={anchorNav}
+                  open={Boolean(anchorNav)}
+                  onClose={handleCloseNav}
+                  keepMounted
+                >
+                  {navLinks.map(item => (
+                    <MenuItem
+                      key={item.label}
+                      component={Link}
+                      to={item.to}
+                      onClick={handleCloseNav}
+                    >
+                      {item.label}
+                    </MenuItem>
+                  ))}
+                </Menu>
+              </>
+            )}
 
-            {/* Cart & User Menu */}
+            {/* Desktop logo & nav */}
+            {!isMobile && (
+              <>
+                <Typography
+                  component={Link}
+                  to="/"
+                  variant="h6"
+                  noWrap
+                  sx={{
+                    mr: 2,
+                    color: 'inherit',
+                    textDecoration: 'none',
+                    display: { xs: 'none', md: 'flex' },
+                    fontWeight: 700,
+                  }}
+                >
+                  E-COMMERCE
+                </Typography>
+                <Box sx={{ flexGrow: 1 }}>
+                  {navLinks.map(item => (
+                    <Button
+                      key={item.label}
+                      component={Link}
+                      to={item.to}
+                      sx={{ color: 'white' }}
+                    >
+                      {item.label}
+                    </Button>
+                  ))}
+                </Box>
+              </>
+            )}
+
+            {/* Cart & user */}
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <IconButton color="inherit" component={Link} to="/cart" sx={{ mr: 1 }}>
+              <IconButton
+                component={Link}
+                to="/cart"
+                color="inherit"
+                sx={{ mr: 1 }}
+              >
                 <ShoppingCartIcon />
               </IconButton>
 
               {isAuthenticated ? (
-                <Box sx={{ flexGrow: 0 }}>
+                <>
                   <Tooltip title="Open settings">
-                    <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
+                    <IconButton onClick={handleOpenUser} sx={{ p: 0 }}>
                       <Avatar sx={{ bgcolor: 'primary.main' }}>
-                        {user?.username?.[0]?.toUpperCase() || <AccountCircleIcon />}
+                        {user.username?.[0]?.toUpperCase() || (
+                          <AccountCircleIcon />
+                        )}
                       </Avatar>
                     </IconButton>
                   </Tooltip>
                   <Menu
+                    anchorEl={anchorUser}
+                    open={Boolean(anchorUser)}
+                    onClose={handleCloseUser}
                     sx={{ mt: '45px' }}
-                    id="menu-appbar"
-                    anchorEl={anchorElUser}
-                    anchorOrigin={{
-                      vertical: 'top',
-                      horizontal: 'right',
-                    }}
-                    keepMounted
-                    transformOrigin={{
-                      vertical: 'top',
-                      horizontal: 'right',
-                    }}
-                    open={Boolean(anchorElUser)}
-                    onClose={handleCloseUserMenu}
+                    anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+                    transformOrigin={{ vertical: 'top', horizontal: 'right' }}
                   >
-                    <MenuItem component={Link} to="/profile" onClick={handleCloseUserMenu}>
-                      <Typography textAlign="center">Profil</Typography>
+                    <MenuItem
+                      component={Link}
+                      to="/profile"
+                      onClick={handleCloseUser}
+                    >
+                      Profil
                     </MenuItem>
-                    <MenuItem component={Link} to="/orders" onClick={handleCloseUserMenu}>
-                      <Typography textAlign="center">Commandes</Typography>
+                    <MenuItem
+                      component={Link}
+                      to="/orders"
+                      onClick={handleCloseUser}
+                    >
+                      Commandes
                     </MenuItem>
-                    {user?.roles?.includes('admin') || user?.roles?.includes('product_manager') ? (
-                      <MenuItem component={Link} to="/dashboard" onClick={handleCloseUserMenu}>
-                        <Typography textAlign="center">Dashboard</Typography>
+                    {(user.roles.includes('super_admin') ||
+                      user.roles.includes('product_manager')) && (
+                      <MenuItem
+                        component={Link}
+                        to="/dashboard"
+                        onClick={handleCloseUser}
+                      >
+                        Dashboard
                       </MenuItem>
-                    ) : null}
-                    <MenuItem onClick={handleLogout}>
-                      <Typography textAlign="center">Déconnexion</Typography>
+                    )}
+                    <MenuItem
+                      onClick={() => {
+                        logout();
+                        handleCloseUser();
+                      }}
+                    >
+                      Déconnexion
                     </MenuItem>
                   </Menu>
-                </Box>
+                </>
               ) : (
                 <>
-                  <Button color="inherit" component={Link} to="/login" sx={{ ml: 1 }}>
+                  <Button
+                    component={Link}
+                    to="/login"
+                    color="inherit"
+                  >
                     Connexion
                   </Button>
-                  <Button 
-                    variant="outlined" 
-                    component={Link} 
-                    to="/register" 
-                    sx={{ 
-                      ml: 1, 
-                      color: 'white', 
+                  <Button
+                    component={Link}
+                    to="/register"
+                    variant="outlined"
+                    sx={{
+                      ml: 1,
+                      color: 'white',
                       borderColor: 'white',
                       '&:hover': {
                         borderColor: 'rgba(255,255,255,0.8)',
-                        backgroundColor: 'rgba(255,255,255,0.1)'
-                      }
+                        backgroundColor: 'rgba(255,255,255,0.1)',
+                      },
                     }}
                   >
                     Inscription
@@ -237,7 +232,7 @@ const Layout = () => {
       <Box component="footer" sx={{ py: 3, backgroundColor: '#f8f9fa', mt: 'auto' }}>
         <Container maxWidth="lg">
           <Typography variant="body2" color="text.secondary" align="center">
-            © {new Date().getFullYear()} E-Commerce. Tous droits réservés.
+            © {new Date().getFullYear()} E-COMMERCE. Tous droits réservés.
           </Typography>
         </Container>
       </Box>
