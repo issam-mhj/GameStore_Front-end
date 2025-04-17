@@ -26,7 +26,6 @@ function App() {
             </Route>
             
             <Route path="unauthorized" element={<Unauthorized />} />
-            <Route path="products/list" element={<ProductGrid/>} />
             
             {/* Protected routes */}
             <Route element={<ProtectedRoute roles={['product_manager', 'super_admin']} />}>
@@ -34,7 +33,11 @@ function App() {
             </Route>
             <Route element={<ProtectedRoute roles={['product_manager', 'super_admin']} />}>
               <Route path="category" element={<Categories />} />
-            </Route>    
+            </Route>
+            <Route>
+              <Route path="productlist" element={<ProductGrid/>} />
+            </Route>
+            
             <Route element={<ProtectedRoute roles={['product_manager', 'super_admin']} />}>
               <Route path="products" element={<Products/>} />
             </Route>
