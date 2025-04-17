@@ -1,15 +1,65 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Grid, Container, Drawer, Box, IconButton, Badge } from '@mui/material';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import CardProduct from '../components/CardProduct';
-import Panier from '../components/PanierSideBar';
+import Panier from '../components/Panier';
+import { useAuth } from '../context/AuthContext';
+import api from '../api/axios';
 
-const ProductGrid = () => {
+const LOCAL_STORAGE_CART_KEY = 'gameexpress-cart';
+
+const Product
+Grid = () => {
   const [cartOpen, setCartOpen] = useState(false);
   const [cartItems, setCartItems] = useState([]);
+  const { isAuthenticated } = useAuth();
 
   const toggleCart = () => {
     setCartOpen(!cartOpen);
+  };
+
+  // Load cart items when the component mounts
+  useEffect(() => {
+    if (isAuthenticated) {
+      // If authenticated, try to load cart from server
+      fetchCartFromServer();
+    } else {
+      // If not authenticated, load from local storage
+      const savedCart = localStorage.getItem(LOCAL_STORAGE_CART_KEY);
+      if (savedCart) {
+        try {
+          setCartItems(JSON.parse(savedCart));
+        } catch (error) {
+          console.error("Error parsing cart from localStorage:", error);
+        }
+      }
+    }
+  }, [isAuthenticated]);
+
+  // Save to local storage
+  useEffect(() => {
+    if (!isAuthenticated && cartItems.length > 0) {
+      localStorage.setItem(LOCAL_STORAGE_CART_KEY, JSON.stringify(cartItems));
+    }
+  }, [cartItems, isAuthenticated]);
+
+  const fetchCartFromServer = async () => {
+    try {
+      const response = await api.get('/v1/cart/items');
+      if (response.data && response.data.items) {
+        const serverCart = response.data.items.map(item => ({
+          id: item.product_id,
+          nom: item.product_name,
+          prix: item.price,
+          quantite: item.quantity,
+          image: item.image_url || '/api/placeholder/250/180'
+        }));
+        
+        setCartItems(serverCart);
+      }
+    } catch (error) {
+      console.error("Error fetching cart from server:", error);
+    }
   };
 
   const products = [
@@ -71,25 +121,37 @@ const ProductGrid = () => {
   ];
 
   // Function to add product to cart
-  const addToCart = (product) => {
-    setCartItems(prev => {
-      const existingItem = prev.find(item => item.id === product.id);
-      if (existingItem) {
-        return prev.map(item => 
-          item.id === product.id 
-            ? {...item, quantite: item.quantite + 1} 
-            : item
-        );
-      } else {
-        return [...prev, {
-          id: product.id,
-          nom: product.title,
-          prix: parseFloat(product.currentPrice.replace('$', '')),
-          quantite: 1,
-          image: product.imageUrl
-        }];
+  const addToCart = async (product) => {
+    const updatedItems = [...cartItems];
+    const existingItem = updatedItems.find(item => item.id === product.id);
+    
+    if (existingItem) {
+      existingItem.quantite += 1;
+    } else {
+      updatedItems.push({
+        id: product.id,
+        nom: product.title,
+        prix: parseFloat(product.currentPrice.replace('$', '')),
+        quantite: 1,
+        image: product.imageUrl
+      });
+    }
+    
+    setCartItems(updatedItems);
+    
+    // Save to server if authenticated
+    if (isAuthenticated) {
+      try {
+        const cartData = updatedItems.map(item => ({
+          product_id: item.id,
+          quantity: item.quantite
+        }));
+        
+        await api.post('/user/cart', { items: cartData });
+      } catch (error) {
+        console.error("Error updating cart on server:", error);
       }
-    });
+    }
   };
 
   const totalItems = cartItems.reduce((sum, item) => sum + item.quantite, 0);

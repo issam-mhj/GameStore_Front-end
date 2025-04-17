@@ -34,7 +34,7 @@ function App() {
             <Route element={<ProtectedRoute roles={['product_manager', 'super_admin']} />}>
               <Route path="category" element={<Categories />} />
             </Route>
-            <Route element={<ProtectedRoute roles={['client', 'super_admin']} />}>
+            <Route>
               <Route path="productlist" element={<ProductGrid/>} />
             </Route>
             
