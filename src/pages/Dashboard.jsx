@@ -123,11 +123,15 @@ const Dashboard = () => {
         total_categories: data.data?.total_categories || 0,
         total_users: data.data?.total_users || 0,
         total_low_products_in_stock: data.data?.total_low_products_in_stock || 0,
-        latest_products: data.latest_products || [],
-        total_revenue: data.data?.total_revenue || 125000,
-        total_orders: data.data?.total_orders || 156,
-        pending_orders: data.data?.pending_orders || 23,
+        latest_products: data.data?.latest_products || [],
+        total_revenue: data.data?.total_revenue || 0,
+        total_orders: data.data?.total_orders || 0,
+        pending_orders: data.data?.pending_orders || 0,
       })
+      // console.log("data", data);
+      
+      // console.log(data.data.total_products);
+      
     } catch (error) {
       console.error("Failed to fetch dashboard statistics:", error)
     } finally {
@@ -438,7 +442,7 @@ const Dashboard = () => {
       </Grid>
 
       {/* Additional Statistics Cards */}
-      <Grid container spacing={5} sx={{ mb: 4, width: "100%" }}>
+      <Grid container spacing={5} sx={{ mb: 4, width: "100%" }} >
         {additionalCards.map((card, index) => (
           <Grid item xs={12} sm={6} md={4} key={index}>
             <Card
@@ -455,7 +459,7 @@ const Dashboard = () => {
                 },
               }}
             >
-              <CardContent sx={{ p: 3 }}>
+              <CardContent sx={{ p: 3 }} >
                 <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
                   <Avatar
                     sx={{
@@ -552,7 +556,7 @@ const Dashboard = () => {
                           component="a"
                           href={`/manageProducts/edit/${product.id}`}
                         >
-                          <ArrowForward fontSize="small" />
+                          <ArrowForward fontSize="small" sx={{mb: 2}} />
                         </IconButton>
                       }
                     >
