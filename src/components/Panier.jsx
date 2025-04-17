@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Box,
   Typography,
@@ -23,8 +23,8 @@ import api from '../api/axios';
 const LOCAL_STORAGE_CART_KEY = 'gameexpress-cart';
 
 export default function Panier({ initialProducts = [], onClose, setCartItems }) {
-  const [produits, setProduits] = React.useState(initialProducts);
-  const [snackbar, setSnackbar] = React.useState({
+  const [produits, setProduits] = useState(initialProducts);
+  const [snackbar, setSnackbar] = useState({
     open: false,
     message: '',
     severity: 'success'
@@ -44,9 +44,6 @@ export default function Panier({ initialProducts = [], onClose, setCartItems }) 
         loadFromLocalStorage();
       }
     };
-    // if (initialProducts.length === 0) {
-    //   loadCartItems();
-    // }
   }, [isAuthenticated]);
 
   // Merging
@@ -74,9 +71,9 @@ export default function Panier({ initialProducts = [], onClose, setCartItems }) 
       if (response.data && response.data.items) {
         console.log(response.data);
         const serverCart = response.data.items.map(item => ({
-          id: item.product_id,
-          nom: item.product_name,
-          prix: item.price,
+          id: item.product.product_id,
+          nom: item.product.name,
+          prix: item.product.price,
           quantite: item.quantity,
           image: item.image_url || '/api/placeholder/250/180'
         }));
@@ -257,7 +254,7 @@ export default function Panier({ initialProducts = [], onClose, setCartItems }) 
                   <Box flexGrow={1}>
                     <Typography fontWeight="bold">{produit.nom}</Typography>
                     <Typography color="primary.main" fontWeight="medium">
-                      {produit.prix.toFixed(2)}€
+                      {/* {produit.prix.toFixed(2)}€ */}
                     </Typography>
                   </Box>
                   <Box>
