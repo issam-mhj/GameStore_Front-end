@@ -13,6 +13,8 @@ import {
 } from '@mui/icons-material';
 import api from '../api/axios';
 import { styled } from '@mui/material/styles';
+import { API_BASE, PLACEHOLDER } from '../config';
+
 
 const VisuallyHiddenInput = styled('input')({
   clip: 'rect(0 0 0 0)',
@@ -225,14 +227,13 @@ const Products = () => {
     });
     
     try {
-      await api.post(`/products/${prodId}/images`, uploadFormData, {
+      await api.post(`/productsg/${prodId}/images`, uploadFormData, {
         
         headers: {
           'Content-Type': 'multipart/form-data'
         }
       });
-      console.log();
-      
+
       showSnackbar('Images uploaded successfully');
       setImageFiles([]);
       if(selectedProduct) fetchProductImages(prodId);
@@ -246,21 +247,25 @@ const Products = () => {
 
   const handleSubmit = async () => {
     try {
-      if (isEditing) {
-        await api.put(`/products/${selectedProduct.id}`, formData);
-        showSnackbar('Product updated successfully');
-      } else {
-        const response = await api.post('/products', formData);
-        console.log(response);
-        showSnackbar('Product created successfully');
-        const newProduct = response.data.product;
-        setSelectedProduct(newProduct);
-        if(imageFiles.length) {
-          await handleUploadImages(newProduct.id);
-        }
-      }
-      handleCloseDialog();
-      fetchProducts();
+      const fd = new FormData();
+      fd.append('name',     formData.name);
+      fd.append('slug',     formData.slug);
+      fd.append('description', formData.description);
+      fd.append('price',    formData.price);
+      fd.append('stock',    formData.stock);
+      fd.append('category_id', formData.category_id);
+      fd.append('primary_index', 0);
+  
+      imageFiles.forEach((file, idx) => {
+        fd.append('images[]', file);
+      });
+  
+      const response = await api.post('/products', fd, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+  
+      showSnackbar('Product created successfully');
+  
     } catch (error) {
       console.error('Error saving product:', error);
       showSnackbar(
@@ -298,12 +303,15 @@ const Products = () => {
     return category ? category.name : 'N/A';
   };
 
-  const getProductMainImage = (product) => {
-    if (product.main_image) {
-      return product.main_image;
+  function getProductMainImage(product) {
+    
+    const main = product.images?.find(img => img.is_primary);
+    if (main) {
+      console.log(main);
+      return `${API_BASE}/storage/${main.image_url}`;
     }
-    return 'https://via.placeholder.com/100x100?text=No+Image';
-  };
+    return PLACEHOLDER;
+  }
 
   if (loading) {
     return (
@@ -607,7 +615,7 @@ const Products = () => {
                   ))}
                 </Grid>
               ) : (
-                <Typography color="text.secondary" sx={{ mb: 2 }}>
+                <Typography color="rtext.secondary" sx={{ mb: 2 }}>
                   No images uploaded yet
                 </Typography>
               )}

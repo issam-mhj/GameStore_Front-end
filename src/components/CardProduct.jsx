@@ -73,7 +73,7 @@ const CardProduct = ({
   offerBadge = "x4",
   rating = 5,
   available = 6,
-  onAddToCart
+onAddToCart
 }) => {
   return (
     <StyledCardWrapper>
