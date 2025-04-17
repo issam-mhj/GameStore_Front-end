@@ -42,6 +42,7 @@ const Layout = () => {
   if (user?.roles?.some(r => ['super_admin', 'product_manager', 'user_manager'].includes(r))) {
     navLinks.push({ label: 'Commandes', to: '/commandes' });
     navLinks.push({ label: 'Manage Procuts', to: '/manageProducts' });
+    navLinks.push({ label: 'Dashboard', to: '/dashboard' });
   }
   if (user?.roles?.includes('super_admin')) {
     navLinks.push({ label: 'Users', to: '/users' });
