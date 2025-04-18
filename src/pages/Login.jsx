@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useCart } from '../context/CartContext';
 import { 
   TextField,
   Button,
@@ -14,7 +15,8 @@ import {
   Divider,
   FormControlLabel,
   Checkbox,
-  Grid
+  Grid,
+  Snackbar
 } from '@mui/material';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
@@ -27,7 +29,13 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState('');
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: '',
+    severity: 'success'
+  });
   const { login, isAuthenticated } = useAuth();
+  const { mergeCartsOnLogin } = useCart();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -51,6 +59,15 @@ const Login = () => {
     try {
       const result = await login(credentials);
       if (result.success) {
+        // Merge carts after successful login
+        const mergeResult = await mergeCartsOnLogin();
+        if (mergeResult && mergeResult.success && mergeResult.message) {
+          setSnackbar({
+            open: true,
+            message: mergeResult.message,
+            severity: 'success'
+          });
+        }
         navigate('/');
       } else {
         setError(result.message);
@@ -62,6 +79,10 @@ const Login = () => {
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
+  };
+
+  const handleSnackbarClose = () => {
+    setSnackbar({ ...snackbar, open: false });
   };
 
   return (
@@ -186,6 +207,21 @@ const Login = () => {
           </Box>
         </Box>
       </Paper>
+      
+      <Snackbar 
+        open={snackbar.open} 
+        autoHideDuration={6000} 
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert 
+          onClose={handleSnackbarClose} 
+          severity={snackbar.severity} 
+          sx={{ width: '100%' }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Container>
   );
 };

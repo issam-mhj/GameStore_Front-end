@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Box,
   Typography,
@@ -8,42 +8,64 @@ import {
   Avatar,
   Stack,
   Paper,
-  Tooltip
+  Tooltip,
+  Snackbar,
+  Alert
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 import DeleteIcon from '@mui/icons-material/Delete';
 import CloseIcon from '@mui/icons-material/Close';
 import ShoppingCartCheckoutIcon from '@mui/icons-material/ShoppingCartCheckout';
+import { useAuth } from '../context/AuthContext';
+import { useCart } from '../context/CartContext';
 
-export default function Panier({ initialProducts = [], onClose, setCartItems }) {
-  const [produits, setProduits] = React.useState(initialProducts);
+export default function Panier({ onClose }) {
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: '',
+    severity: 'success'
+  });
+  
+  const { isAuthenticated } = useAuth();
+  const { 
+    cartItems, 
+    updateQuantity, 
+    removeFromCart, 
+    clearCart, 
+    totalItems,
+    totalPrice,
+    loading 
+  } = useCart();
 
-  // Update when initialProducts changes
-  React.useEffect(() => {
-    setProduits(initialProducts);
-  }, [initialProducts]);
-
-  const totalArticles = produits.reduce((acc, p) => acc + p.quantite, 0);
-  const sousTotal = produits.reduce((acc, p) => acc + p.prix * p.quantite, 0);
-  const tva = sousTotal * 0.2;
-  const total = sousTotal + tva;
+  const tva = totalPrice * 0.2;
+  const total = totalPrice + tva;
 
   const changerQuantite = (id, delta) => {
-    const updatedProducts = produits.map((p) =>
-      p.id === id 
-        ? { ...p, quantite: Math.max(1, p.quantite + delta) } 
-        : p
-    );
-    setProduits(updatedProducts);
-    setCartItems(updatedProducts);
+    updateQuantity(id, delta);
   };
 
   const supprimerProduit = (id) => {
-    const updatedProducts = produits.filter(p => p.id !== id);
-    setProduits(updatedProducts);
-    setCartItems(updatedProducts);
+    removeFromCart(id);
   };
+
+  const showSnackbar = (message, severity = 'success') => {
+    setSnackbar({ open: true, message, severity });
+  };
+
+  const handleSnackbarClose = () => {
+    setSnackbar({ ...snackbar, open: false });
+  };
+
+  if (loading) {
+    return (
+      <Paper sx={{ width: 350, height: '100%', overflow: 'auto' }}>
+        <Box sx={{ p: 3, display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+          <Typography>Chargement de votre panier...</Typography>
+        </Box>
+      </Paper>
+    );
+  }
 
   return (
     <Paper sx={{ width: 350, height: '100%', overflow: 'auto' }}>
@@ -51,20 +73,20 @@ export default function Panier({ initialProducts = [], onClose, setCartItems }) 
         <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
           <Typography variant="h6" fontWeight="bold">
             <ShoppingCartCheckoutIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
-            Votre panier ({totalArticles})
+            Votre panier ({totalItems})
           </Typography>
           <IconButton onClick={onClose} size="small">
             <CloseIcon />
           </IconButton>
         </Box>
 
-        {produits.length === 0 ? (
+        {cartItems.length === 0 ? (
           <Box textAlign="center" py={5}>
             <Typography color="text.secondary">Votre panier est vide</Typography>
           </Box>
         ) : (
           <>
-            {produits.map((produit) => (
+            {cartItems.map((produit) => (
               <Box 
                 key={produit.id} 
                 mb={2}
@@ -85,7 +107,7 @@ export default function Panier({ initialProducts = [], onClose, setCartItems }) 
                   <Box flexGrow={1}>
                     <Typography fontWeight="bold">{produit.nom}</Typography>
                     <Typography color="primary.main" fontWeight="medium">
-                      {produit.prix.toFixed(2)}€
+                      {produit.prix}€
                     </Typography>
                   </Box>
                   <Box>
@@ -125,7 +147,7 @@ export default function Panier({ initialProducts = [], onClose, setCartItems }) 
             <Box sx={{ px: 2 }}>
               <Box display="flex" justifyContent="space-between" mb={1}>
                 <Typography>Sous-total</Typography>
-                <Typography>{sousTotal.toFixed(2)}€</Typography>
+                <Typography>{totalPrice.toFixed(2)}€</Typography>
               </Box>
               <Box display="flex" justifyContent="space-between" mb={1}>
                 <Typography>TVA (20%)</Typography>
@@ -142,27 +164,55 @@ export default function Panier({ initialProducts = [], onClose, setCartItems }) 
                 <Typography fontWeight="bold" color="primary.main">{total.toFixed(2)}€</Typography>
               </Box>
 
-              <Button
-                variant="contained"
-                fullWidth
-                sx={{ 
-                  mt: 4, 
-                  mb: 2,
-                  py: 1.5,
-                  backgroundColor: '#0d1117', 
-                  color: '#fff',
-                  '&:hover': {
-                    backgroundColor: '#1a2536'
-                  }
-                }}
-                endIcon={<ShoppingCartCheckoutIcon />}
-              >
-                Passer la commande
-              </Button>
+              <Stack direction="row" spacing={2} mt={4} mb={2}>
+                <Button
+                  variant="outlined"
+                  fullWidth
+                  onClick={clearCart}
+                >
+                  Vider le panier
+                </Button>
+                <Button
+                  variant="contained"
+                  fullWidth
+                  sx={{ 
+                    py: 1.5,
+                    backgroundColor: '#0d1117', 
+                    color: '#fff',
+                    '&:hover': {
+                      backgroundColor: '#1a2536'
+                    }
+                  }}
+                  endIcon={<ShoppingCartCheckoutIcon />}
+                >
+                  Passer la commande
+                </Button>
+              </Stack>
+              
+              {!isAuthenticated && cartItems.length > 0 && (
+                <Typography variant="body2" color="text.secondary" textAlign="center" mt={2}>
+                  Connectez-vous pour sauvegarder votre panier
+                </Typography>
+              )}
             </Box>
           </>
         )}
       </Box>
+
+      <Snackbar 
+        open={snackbar.open} 
+        autoHideDuration={6000} 
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert 
+          onClose={handleSnackbarClose} 
+          severity={snackbar.severity} 
+          sx={{ width: '100%' }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Paper>
   );
 }
