@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { Grid, Container, Drawer, Box, IconButton, Badge } from '@mui/material';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import CardProduct from '../components/CardProduct';
 import Panier from '../components/Panier';
 import api from '../api/axios';
+import { useCart } from '../context/CartContext';
 
 const ProductGrid = () => {
   const [products, setProducts] = useState([]);
   const [cartOpen, setCartOpen] = useState(false);
-  const [cartItems, setCartItems] = useState([]);
+  
+  // Use the global cart context instead of local state
+  const { addToCart, totalItems } = useCart();
 
   const toggleCart = () => {
     setCartOpen(!cartOpen);
@@ -19,7 +21,7 @@ const ProductGrid = () => {
     const fetchProducts = async () => {
       try {
         const response = await api.get('/products');
-        console.log(response.data.products_list);
+        console.log(response.data);
          
         const formattedProducts = response.data.products_list.map(product => ({
           id: product.id,
@@ -42,29 +44,6 @@ const ProductGrid = () => {
   
     fetchProducts();
   }, []);
-  
-  const addToCart = (product) => {
-    setCartItems(prev => {
-      const existingItem = prev.find(item => item.id === product.id);
-      if (existingItem) {
-        return prev.map(item =>
-          item.id === product.id
-            ? { ...item, quantite: item.quantite + 1 }
-            : item
-        );
-      } else {
-        return [...prev, {
-          id: product.id,
-          nom: product.title,
-          prix: parseFloat(product.currentPrice?.replace('$', '')) || 0,
-          quantite: 1,
-          image: product.imageUrl
-        }];
-      }
-    });
-  };
-
-  const totalItems = cartItems.reduce((sum, item) => sum + item.quantite, 0);
 
   return (
     <Container maxWidth="xl" sx={{ position: 'relative', py: 4 }}>
@@ -86,11 +65,7 @@ const ProductGrid = () => {
       </Box>
 
       <Drawer anchor="right" open={cartOpen} onClose={toggleCart}>
-        <Panier
-          initialProducts={cartItems}
-          onClose={toggleCart}
-          setCartItems={setCartItems}
-        />
+        <Panier onClose={toggleCart} />
       </Drawer>
 
       <Grid container spacing={3}>
