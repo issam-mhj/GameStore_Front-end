@@ -30,7 +30,7 @@ const ProductGrid = () => {
           imageUrl: product.images && product.images.length > 0
           ? "http://127.0.0.1:8000/storage/" + product.images[0].image_url
           : '/api/placeholder/250/180',
-          originalPrice: product.price+99 || '$0',
+          originalPrice: product.price+88 || '$0',
           currentPrice: product.price || '$0',
           offerBadge: product.stock || '',
           rating: product.rating || 5,
