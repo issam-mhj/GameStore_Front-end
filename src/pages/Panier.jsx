@@ -46,7 +46,7 @@ const ProductGrid = () => {
     try {
       const response = await api.get('/v2/cart/items');
       if (response.data) {
-        console.log(response.data);
+        // console.log(response.data);
         const serverCart = response.data.items.map(item => ({
           id: item.product_id,
           nom: item.product.name,

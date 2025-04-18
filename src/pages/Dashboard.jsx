@@ -1,9 +1,9 @@
-"use client"
+"use client";
 
-import React from "react"
+import React from "react";
 
-import { useEffect, useState } from "react"
-import { useAuth } from "../context/AuthContext"
+import { useEffect, useState } from "react";
+import { useAuth } from "../context/AuthContext";
 import {
   Box,
   Typography,
@@ -27,7 +27,7 @@ import {
   MenuItem,
   Tooltip,
   LinearProgress,
-} from "@mui/material"
+} from "@mui/material";
 import {
   Dashboard as DashboardIcon,
   ShoppingCart,
@@ -50,8 +50,8 @@ import {
   LocalShipping,
   CheckCircle,
   DonutLarge,
-} from "@mui/icons-material"
-import api from "../api/axios"
+} from "@mui/icons-material";
+import api from "../api/axios";
 import {
   ResponsiveContainer,
   BarChart,
@@ -64,11 +64,11 @@ import {
   Pie,
   Cell,
   Legend,
-} from "recharts"
+} from "recharts";
 
 const Dashboard = () => {
-  const [loading, setLoading] = useState(true)
-  const [refreshing, setRefreshing] = useState(false)
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [statistics, setStatistics] = useState({
     total_products: 0,
     total_categories: 0,
@@ -78,14 +78,14 @@ const Dashboard = () => {
     total_revenue: 0,
     total_orders: 0,
     pending_orders: 0,
-  })
+  });
 
-  const [anchorEl, setAnchorEl] = useState(null)
-  const [timeRange, setTimeRange] = useState("month")
-  const [chartMenuAnchor, setChartMenuAnchor] = useState(null)
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [timeRange, setTimeRange] = useState("month");
+  const [chartMenuAnchor, setChartMenuAnchor] = useState(null);
 
-  const { user } = useAuth()
-  const theme = useTheme()
+  const { user } = useAuth();
+  const theme = useTheme();
 
   // Sample data - in a real app, this would come from the API
   const chartData = [
@@ -95,76 +95,76 @@ const Dashboard = () => {
     { name: "Apr", products: 40, revenue: 22000 },
     { name: "May", products: 55, revenue: 30000 },
     { name: "Jun", products: 48, revenue: 27000 },
-  ]
+  ];
 
   const orderStatusData = [
     { name: "Livré", value: 65, color: "#4caf50" },
     { name: "En cours", value: 25, color: "#2196f3" },
     { name: "En attente", value: 10, color: "#ff9800" },
-  ]
+  ];
 
   const topSellingCategories = [
     { category: "Jeux PS5", count: 42, percentage: 70 },
     { category: "Accessoires", count: 28, percentage: 55 },
     { category: "Jeux Xbox", count: 23, percentage: 45 },
     { category: "PC Gaming", count: 18, percentage: 35 },
-  ]
+  ];
 
   useEffect(() => {
-    fetchStatistics()
-  }, [])
+    fetchStatistics();
+  }, []);
 
   const fetchStatistics = async () => {
-    setLoading(true)
+    setLoading(true);
     try {
-      const { data } = await api.get("v1/admin/dashboard")
+      const { data } = await api.get("v1/admin/dashboard");
       setStatistics({
         total_products: data.data?.total_products || 0,
         total_categories: data.data?.total_categories || 0,
         total_users: data.data?.total_users || 0,
-        total_low_products_in_stock: data.data?.total_low_products_in_stock || 0,
+        total_low_products_in_stock:
+          data.data?.total_low_products_in_stock || 0,
         latest_products: data.data?.latest_products || [],
         total_revenue: data.data?.total_revenue || 0,
         total_orders: data.data?.total_orders || 0,
         pending_orders: data.data?.pending_orders || 0,
-      })
+      });
       // console.log("data", data);
-      
+
       // console.log(data.data.total_products);
-      
     } catch (error) {
-      console.error("Failed to fetch dashboard statistics:", error)
+      console.error("Failed to fetch dashboard statistics:", error);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleRefresh = async () => {
-    setRefreshing(true)
-    await fetchStatistics()
-    setRefreshing(false)
-  }
+    setRefreshing(true);
+    await fetchStatistics();
+    setRefreshing(false);
+  };
 
   const handleMenuOpen = (event) => {
-    setAnchorEl(event.currentTarget)
-  }
+    setAnchorEl(event.currentTarget);
+  };
 
   const handleMenuClose = () => {
-    setAnchorEl(null)
-  }
+    setAnchorEl(null);
+  };
 
   const handleChartMenuOpen = (event) => {
-    setChartMenuAnchor(event.currentTarget)
-  }
+    setChartMenuAnchor(event.currentTarget);
+  };
 
   const handleChartMenuClose = () => {
-    setChartMenuAnchor(null)
-  }
+    setChartMenuAnchor(null);
+  };
 
   const handleTimeRangeChange = (range) => {
-    setTimeRange(range)
-    handleChartMenuClose()
-  }
+    setTimeRange(range);
+    handleChartMenuClose();
+  };
 
   // Format currency for revenue display
   const formatCurrency = (amount) => {
@@ -172,19 +172,19 @@ const Dashboard = () => {
       style: "currency",
       currency: "MAD",
       minimumFractionDigits: 2,
-    }).format(amount)
-  }
+    }).format(amount);
+  };
 
   // Format date
   const formatDate = (dateString) => {
-    if (!dateString) return ""
-    const date = new Date(dateString)
+    if (!dateString) return "";
+    const date = new Date(dateString);
     return new Intl.DateTimeFormat("fr-FR", {
       day: "2-digit",
       month: "short",
       year: "numeric",
-    }).format(date)
-  }
+    }).format(date);
+  };
 
   // Dashboard card data
   const dashboardCards = [
@@ -220,7 +220,7 @@ const Dashboard = () => {
       trend: "+2",
       trendUp: false,
     },
-  ]
+  ];
 
   // Additional dashboard cards
   const additionalCards = [
@@ -248,14 +248,19 @@ const Dashboard = () => {
       trend: "-3%",
       trendUp: false,
     },
-  ]
+  ];
 
   if (loading) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="80vh">
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        minHeight="80vh"
+      >
         <CircularProgress size={60} thickness={4} />
       </Box>
-    )
+    );
   }
 
   return (
@@ -274,18 +279,27 @@ const Dashboard = () => {
         }}
       >
         <Box sx={{ position: "relative", zIndex: 2 }}>
-          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+            }}
+          >
             <Box>
               <Typography variant="h4" component="h1" fontWeight="500">
                 Tableau de Bord
               </Typography>
               <Typography variant="subtitle1" sx={{ mt: 1, opacity: 0.9 }}>
-              {user?.user?.name || 'Admin'} • {
-    user?.roles?.[0] === 'super_admin' ? 'Super Admin'
-      : user?.roles?.[0] === 'product_manager' ? 'Gestionnaire de Produit'
-      : user?.roles?.[0] === 'user_manager'  ? 'Gestionnaire des Clients'
-      : 'Utilisateur'
-  }              </Typography>
+                {user?.user?.name || "Admin"} •{" "}
+                {user?.roles?.[0] === "super_admin"
+                  ? "Super Admin"
+                  : user?.roles?.[0] === "product_manager"
+                    ? "Gestionnaire de Produit"
+                    : user?.roles?.[0] === "user_manager"
+                      ? "Gestionnaire des Clients"
+                      : "Utilisateur"}{" "}
+              </Typography>
               <Typography variant="body2" sx={{ mt: 1, opacity: 0.7 }}>
                 {new Date().toLocaleDateString("fr-FR", {
                   weekday: "long",
@@ -310,7 +324,11 @@ const Dashboard = () => {
               >
                 Exporter
               </Button>
-              <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
+              <Menu
+                anchorEl={anchorEl}
+                open={Boolean(anchorEl)}
+                onClose={handleMenuClose}
+              >
                 <MenuItem onClick={handleMenuClose}>Exporter en PDF</MenuItem>
                 <MenuItem onClick={handleMenuClose}>Exporter en Excel</MenuItem>
                 <MenuItem onClick={handleMenuClose}>Exporter en CSV</MenuItem>
@@ -382,7 +400,12 @@ const Dashboard = () => {
               }}
             >
               <CardContent sx={{ p: 3 }}>
-                <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+                <Box
+                  display="flex"
+                  justifyContent="space-between"
+                  alignItems="center"
+                  mb={2}
+                >
                   <Avatar
                     sx={{
                       bgcolor: alpha(card.color, 0.1),
@@ -412,16 +435,27 @@ const Dashboard = () => {
                             : card.trendUp
                               ? alpha("#4caf50", 0.1)
                               : alpha("#f44336", 0.1),
-                        color: card.trendUp === null ? "#9e9e9e" : card.trendUp ? "#4caf50" : "#f44336",
+                        color:
+                          card.trendUp === null
+                            ? "#9e9e9e"
+                            : card.trendUp
+                              ? "#4caf50"
+                              : "#f44336",
                         fontWeight: 500,
                       }}
                     />
                   )}
                 </Box>
-                <Typography variant="h4" sx={{ fontWeight: 600, color: card.color }}>
+                <Typography
+                  variant="h4"
+                  sx={{ fontWeight: 600, color: card.color }}
+                >
                   {card.value}
                 </Typography>
-                <Typography color="textSecondary" sx={{ mt: 1, fontWeight: 500 }}>
+                <Typography
+                  color="textSecondary"
+                  sx={{ mt: 1, fontWeight: 500 }}
+                >
                   {card.title}
                 </Typography>
               </CardContent>
@@ -442,7 +476,7 @@ const Dashboard = () => {
       </Grid>
 
       {/* Additional Statistics Cards */}
-      <Grid container spacing={5} sx={{ mb: 4, width: "100%" }} >
+      <Grid container spacing={5} sx={{ mb: 4, width: "100%" }}>
         {additionalCards.map((card, index) => (
           <Grid item xs={12} sm={6} md={4} key={index}>
             <Card
@@ -459,8 +493,13 @@ const Dashboard = () => {
                 },
               }}
             >
-              <CardContent sx={{ p: 3 }} >
-                <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+              <CardContent sx={{ p: 3 }}>
+                <Box
+                  display="flex"
+                  justifyContent="space-between"
+                  alignItems="center"
+                  mb={2}
+                >
                   <Avatar
                     sx={{
                       bgcolor: alpha(card.color, 0.1),
@@ -475,20 +514,34 @@ const Dashboard = () => {
                   {card.trend && (
                     <Chip
                       size="small"
-                      icon={card.trendUp ? <ArrowUpward fontSize="small" /> : <TrendingDown fontSize="small" />}
+                      icon={
+                        card.trendUp ? (
+                          <ArrowUpward fontSize="small" />
+                        ) : (
+                          <TrendingDown fontSize="small" />
+                        )
+                      }
                       label={card.trend}
                       sx={{
-                        backgroundColor: card.trendUp ? alpha("#4caf50", 0.1) : alpha("#f44336", 0.1),
+                        backgroundColor: card.trendUp
+                          ? alpha("#4caf50", 0.1)
+                          : alpha("#f44336", 0.1),
                         color: card.trendUp ? "#4caf50" : "#f44336",
                         fontWeight: 500,
                       }}
                     />
                   )}
                 </Box>
-                <Typography variant="h4" sx={{ fontWeight: 600, color: card.color }}>
+                <Typography
+                  variant="h4"
+                  sx={{ fontWeight: 600, color: card.color }}
+                >
                   {card.value}
                 </Typography>
-                <Typography color="textSecondary" sx={{ mt: 1, fontWeight: 500 }}>
+                <Typography
+                  color="textSecondary"
+                  sx={{ mt: 1, fontWeight: 500 }}
+                >
                   {card.title}
                 </Typography>
               </CardContent>
@@ -512,7 +565,10 @@ const Dashboard = () => {
       <Grid container spacing={3} sx={{ width: "100%" }}>
         {/* Latest Products List */}
         <Grid item xs={12} md={7}>
-          <Paper elevation={2} sx={{ borderRadius: "16px", overflow: "hidden", mb: 3 }}>
+          <Paper
+            elevation={2}
+            sx={{ borderRadius: "16px", overflow: "hidden", mb: 3 }}
+          >
             <Box
               sx={{
                 p: 2,
@@ -529,7 +585,12 @@ const Dashboard = () => {
                 <IconButton size="small" sx={{ color: "white" }}>
                   <MoreVert fontSize="small" />
                 </IconButton>
-                <IconButton size="small" sx={{ color: "white", ml: 1 }} component="a" href="/manageProducts/add">
+                <IconButton
+                  size="small"
+                  sx={{ color: "white", ml: 1 }}
+                  component="a"
+                  href="/manageProducts/add"
+                >
                   <Add fontSize="small" />
                 </IconButton>
               </Box>
@@ -556,7 +617,7 @@ const Dashboard = () => {
                           component="a"
                           href={`/manageProducts/edit/${product.id}`}
                         >
-                          <ArrowForward fontSize="small" sx={{mb: 2}} />
+                          <ArrowForward fontSize="small" sx={{ mb: 2 }} />
                         </IconButton>
                       }
                     >
@@ -579,39 +640,87 @@ const Dashboard = () => {
                           </Typography>
                         }
                         secondary={
-                          <Box sx={{ display: "flex", alignItems: "center", mt: 0.5, color: "text.secondary" }}>
-                            <Typography variant="body2" color="primary" fontWeight={500}>
+                          <Box
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              mt: 0.5,
+                              color: "text.secondary",
+                            }}
+                          >
+                            <Typography
+                              variant="body2"
+                              color="primary"
+                              fontWeight={500}
+                            >
                               {formatCurrency(product.price || 0)}
                             </Typography>
                             {product.created_at && (
-                              <Box sx={{ display: "flex", alignItems: "center", ml: 2 }}>
-                                <CalendarToday fontSize="small" sx={{ fontSize: 14, mr: 0.5 }} />
-                                <Typography variant="caption">{formatDate(product.created_at)}</Typography>
+                              <Box
+                                sx={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  ml: 2,
+                                }}
+                              >
+                                <CalendarToday
+                                  fontSize="small"
+                                  sx={{ fontSize: 14, mr: 0.5 }}
+                                />
+                                <Typography variant="caption">
+                                  {formatDate(product.created_at)}
+                                </Typography>
                               </Box>
                             )}
                             {product.stock !== undefined && (
-                              <Box sx={{ display: "flex", alignItems: "center", ml: 2 }}>
-                                <Inventory fontSize="small" sx={{ fontSize: 14, mr: 0.5 }} />
-                                <Typography variant="caption">Stock: {product.stock}</Typography>
+                              <Box
+                                sx={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  ml: 2,
+                                }}
+                              >
+                                <Inventory
+                                  fontSize="small"
+                                  sx={{ fontSize: 14, mr: 0.5 }}
+                                />
+                                <Typography variant="caption">
+                                  Stock: {product.stock}
+                                </Typography>
                               </Box>
                             )}
                           </Box>
                         }
                       />
                     </ListItem>
-                    {index < statistics.latest_products.length - 1 && <Divider variant="inset" component="li" />}
+                    {index < statistics.latest_products.length - 1 && (
+                      <Divider variant="inset" component="li" />
+                    )}
                   </React.Fragment>
                 ))}
               </List>
             ) : (
               <Box sx={{ p: 3, textAlign: "center" }}>
-                <Typography color="textSecondary">Aucun produit récent disponible.</Typography>
+                <Typography color="textSecondary">
+                  Aucun produit récent disponible.
+                </Typography>
               </Box>
             )}
 
             {statistics.latest_products.length > 0 && (
-              <Box sx={{ p: 2, textAlign: "center", borderTop: `1px solid ${theme.palette.divider}` }}>
-                <Button startIcon={<Visibility />} component="a" href="/manageProducts" color="primary">
+              <Box
+                sx={{
+                  p: 2,
+                  textAlign: "center",
+                  borderTop: `1px solid ${theme.palette.divider}`,
+                }}
+              >
+                <Button
+                  startIcon={<Visibility />}
+                  component="a"
+                  href="/manageProducts"
+                  color="primary"
+                >
                   Voir tous les produits
                 </Button>
               </Box>
@@ -619,7 +728,10 @@ const Dashboard = () => {
           </Paper>
 
           {/* Top Selling Categories */}
-          <Paper elevation={2} sx={{ borderRadius: "16px", overflow: "hidden" }}>
+          <Paper
+            elevation={2}
+            sx={{ borderRadius: "16px", overflow: "hidden" }}
+          >
             <Box
               sx={{
                 p: 2,
@@ -632,15 +744,29 @@ const Dashboard = () => {
               }}
             >
               <Typography variant="h6">Catégories Populaires</Typography>
-              <IconButton size="small" sx={{ color: "white" }} component="a" href="/manageCategories">
+              <IconButton
+                size="small"
+                sx={{ color: "white" }}
+                component="a"
+                href="/manageCategories"
+              >
                 <ArrowForward fontSize="small" />
               </IconButton>
             </Box>
 
             <Box sx={{ p: 3 }}>
               {topSellingCategories.map((category, index) => (
-                <Box key={index} sx={{ mb: index < topSellingCategories.length - 1 ? 3 : 0 }}>
-                  <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
+                <Box
+                  key={index}
+                  sx={{ mb: index < topSellingCategories.length - 1 ? 3 : 0 }}
+                >
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      mb: 1,
+                    }}
+                  >
                     <Typography variant="body2" fontWeight={500}>
                       {category.category}
                     </Typography>
@@ -656,7 +782,10 @@ const Dashboard = () => {
                         sx={{
                           height: 8,
                           borderRadius: 4,
-                          backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                          backgroundColor: alpha(
+                            theme.palette.primary.main,
+                            0.1
+                          ),
                           "& .MuiLinearProgress-bar": {
                             backgroundColor: theme.palette.primary.main,
                           },
@@ -675,7 +804,10 @@ const Dashboard = () => {
 
         {/* Chart & Summary */}
         <Grid item xs={12} md={5}>
-          <Paper elevation={2} sx={{ borderRadius: "16px", p: 0, mb: 3, overflow: "hidden" }}>
+          <Paper
+            elevation={2}
+            sx={{ borderRadius: "16px", p: 0, mb: 3, overflow: "hidden" }}
+          >
             <Box
               sx={{
                 p: 2,
@@ -689,15 +821,31 @@ const Dashboard = () => {
               <Typography variant="h6">Statistiques des Produits</Typography>
               <Box>
                 <Tooltip title="Filtrer par période">
-                  <IconButton size="small" sx={{ color: "white" }} onClick={handleChartMenuOpen}>
+                  <IconButton
+                    size="small"
+                    sx={{ color: "white" }}
+                    onClick={handleChartMenuOpen}
+                  >
                     <FilterList fontSize="small" />
                   </IconButton>
                 </Tooltip>
-                <Menu anchorEl={chartMenuAnchor} open={Boolean(chartMenuAnchor)} onClose={handleChartMenuClose}>
-                  <MenuItem onClick={() => handleTimeRangeChange("week")}>Cette semaine</MenuItem>
-                  <MenuItem onClick={() => handleTimeRangeChange("month")}>Ce mois</MenuItem>
-                  <MenuItem onClick={() => handleTimeRangeChange("quarter")}>Ce trimestre</MenuItem>
-                  <MenuItem onClick={() => handleTimeRangeChange("year")}>Cette année</MenuItem>
+                <Menu
+                  anchorEl={chartMenuAnchor}
+                  open={Boolean(chartMenuAnchor)}
+                  onClose={handleChartMenuClose}
+                >
+                  <MenuItem onClick={() => handleTimeRangeChange("week")}>
+                    Cette semaine
+                  </MenuItem>
+                  <MenuItem onClick={() => handleTimeRangeChange("month")}>
+                    Ce mois
+                  </MenuItem>
+                  <MenuItem onClick={() => handleTimeRangeChange("quarter")}>
+                    Ce trimestre
+                  </MenuItem>
+                  <MenuItem onClick={() => handleTimeRangeChange("year")}>
+                    Cette année
+                  </MenuItem>
                 </Menu>
               </Box>
             </Box>
@@ -717,7 +865,11 @@ const Dashboard = () => {
                       boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
                     }}
                   />
-                  <Bar dataKey="products" fill={theme.palette.primary.main} radius={[4, 4, 0, 0]} />
+                  <Bar
+                    dataKey="products"
+                    fill={theme.palette.primary.main}
+                    radius={[4, 4, 0, 0]}
+                  />
                 </BarChart>
               </ResponsiveContainer>
             </Box>
@@ -733,19 +885,22 @@ const Dashboard = () => {
                 <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
                   <DashboardIcon color="primary" sx={{ mr: 1 }} />
                   <Typography variant="body1">
-                    {statistics.total_products} produits dans {statistics.total_categories} catégories
+                    {statistics.total_products} produits dans{" "}
+                    {statistics.total_categories} catégories
                   </Typography>
                 </Box>
                 <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
                   <WarningAmber color="error" sx={{ mr: 1 }} />
                   <Typography variant="body1">
-                    {statistics.total_low_products_in_stock} produits en stock faible
+                    {statistics.total_low_products_in_stock} produits en stock
+                    faible
                   </Typography>
                 </Box>
                 <Box sx={{ display: "flex", alignItems: "center" }}>
                   <CheckCircle color="success" sx={{ mr: 1 }} />
                   <Typography variant="body1">
-                    {statistics.total_orders - statistics.pending_orders} commandes traitées
+                    {statistics.total_orders - statistics.pending_orders}{" "}
+                    commandes traitées
                   </Typography>
                 </Box>
               </Box>
@@ -753,7 +908,10 @@ const Dashboard = () => {
           </Paper>
 
           {/* Order Status Pie Chart */}
-          <Paper elevation={2} sx={{ borderRadius: "16px", p: 0, overflow: "hidden" }}>
+          <Paper
+            elevation={2}
+            sx={{ borderRadius: "16px", p: 0, overflow: "hidden" }}
+          >
             <Box
               sx={{
                 p: 2,
@@ -770,7 +928,16 @@ const Dashboard = () => {
               </IconButton>
             </Box>
 
-            <Box sx={{ height: 300, width:500 , p:2, display: "flex", justifyContent: "center", alignItems: "center" }}>
+            <Box
+              sx={{
+                height: 300,
+                width: 500,
+                p: 2,
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
@@ -781,7 +948,9 @@ const Dashboard = () => {
                     outerRadius={80}
                     paddingAngle={5}
                     dataKey="value"
-                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                    label={({ name, percent }) =>
+                      `${name} ${(percent * 100).toFixed(0)}%`
+                    }
                   >
                     {orderStatusData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.color} />
@@ -803,7 +972,7 @@ const Dashboard = () => {
         </Grid>
       </Grid>
     </Box>
-  )
-}
+  );
+};
 
-export default Dashboard
+export default Dashboard;

@@ -21,7 +21,7 @@ const ProductGrid = () => {
     const fetchProducts = async () => {
       try {
         const response = await api.get('/products');
-        console.log(response.data);
+        // console.log(response.data);
          
         const formattedProducts = response.data.products_list.map(product => ({
           id: product.id,

@@ -67,7 +67,7 @@ const Products = () => {
     setLoading(true);
     try {
       const response = await api.get('/products');
-      console.log(response.data.products_list);
+      // console.log(response.data.products_list);
       setProducts(response.data.products_list || []);
     } catch (error) {
       console.error('Failed to fetch products:', error);
@@ -82,7 +82,7 @@ const Products = () => {
       const response = await api.get('v1/admin/categories');      
       setCategories(response.data.data || []);
     } catch (error) {
-      console.error('Failed to fetch categories:', error);
+      // console.error('Failed to fetch categories:', error);
       showSnackbar('Failed to load categories', 'error');
     }
   };
@@ -307,7 +307,7 @@ const Products = () => {
     
     const main = product.images?.find(img => img.is_primary);
     if (main) {
-      console.log(main);
+      // console.log(main);
       return `${API_BASE}/storage/${main.image_url}`;
     }
     return PLACEHOLDER;

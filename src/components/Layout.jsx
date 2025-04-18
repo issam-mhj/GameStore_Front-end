@@ -291,7 +291,10 @@ const Layout = () => {
   const theme = useTheme()
   const isMobile = useMediaQuery(theme.breakpoints.down("md"))
   const location = useLocation()
-  const isDashboardPage = location.pathname.includes("/dashboard")
+  // const isDashboardPage = location.pathname.includes("/dashboard")
+  const isDashboardPage = ["/dashboard", "/users", "/roles"].some((path) =>
+    location.pathname.includes(path)
+  );
 
   const [anchorNav, setAnchorNav] = useState(null)
   const [anchorUser, setAnchorUser] = useState(null)

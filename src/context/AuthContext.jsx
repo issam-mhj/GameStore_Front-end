@@ -16,7 +16,7 @@ export const AuthProvider = ({ children }) => {
       try {
         if (token) {
           const { data } = await api.get('/user');
-          console.log(data);
+          // console.log(data);
           setUser(data);
           setIsAuthenticated(true);
         }
@@ -34,7 +34,7 @@ export const AuthProvider = ({ children }) => {
 
    // roles
    const hasRole = (requiredRoles) => {
-    console.log("user");
+    // console.log("user");
     
     if (!requiredRoles || requiredRoles.length === 0) return true;
     if (!user?.roles) return false;
