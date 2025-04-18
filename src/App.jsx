@@ -12,40 +12,43 @@ import Layout from './components/Layout';
 import Categories from './pages/Categories';
 import Products from './pages/Products';
 import ProductGrid from './pages/ProductLists';
+
 function App() {
   return (
     <Router>
       <AuthProvider>
-        <CartProvider>
-          <Routes>
-            <Route path="/" element={<Layout />}>
-              <Route index element={<Home />} />
-              
-            
-              <Route element={<AuthRoute />}>
-                <Route path="login" element={<Login />} />
-                <Route path="register" element={<Register />} />
-              </Route>
-              
-              <Route path="unauthorized" element={<Unauthorized />} />
-              
-              {/* Protected routes */}
-              <Route element={<ProtectedRoute roles={['product_manager', 'super_admin']} />}>
-                <Route path="dashboard" element={<Dashboard />} />
-              </Route>
-              <Route element={<ProtectedRoute roles={['product_manager', 'super_admin']} />}>
-                <Route path="category" element={<Categories />} />
-              </Route>
-              <Route>
-                <Route path="productlist" element={<ProductGrid/>} />
-              </Route>
-              
-              <Route element={<ProtectedRoute roles={['product_manager', 'super_admin']} />}>
-                <Route path="products" element={<Products/>} />
-              </Route>
+<CartProvider>
+        <Routes>
+          <Route path="/" element={<Layout />}>
+            <Route index element={<Home />} />
+
+            <Route element={<AuthRoute />}>
+              <Route path="login" element={<Login />} />
+              <Route path="register" element={<Register />} />
             </Route>
-            <Route path="*" element={<div>404</div>} />
-          </Routes>
+
+            <Route path="unauthorized" element={<Unauthorized />} />
+
+            {/* Protected routes */}
+            <Route
+              element={
+                <ProtectedRoute roles={["product_manager", "super_admin"]} />
+              }
+            >
+              <Route path="dashboard" element={<Dashboard />} />
+              <Route path="category" element={<Categories />} />
+              <Route path="manageProducts" element={<Products />} />
+            </Route>
+
+            <Route
+              element={<ProtectedRoute roles={["client", "super_admin"]} />}
+            >
+              <Route path="products" element={<ProductGrid />} />
+            </Route>
+          </Route>
+          <Route path="*" element={<div>404</div>} />
+        </Routes>
+         
         </CartProvider>
       </AuthProvider>
     </Router>
