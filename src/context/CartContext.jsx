@@ -11,28 +11,20 @@ export const CartProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const { isAuthenticated, user } = useAuth();
 
-  // Load cart items when component mounts or authentication changes
+
   useEffect(() => {
     const loadCart = async () => {
       setLoading(true);
-      
       if (isAuthenticated) {
         try {
-          // Load cart from database for authenticated users
           await fetchCartFromServer();
         } catch (error) {
           console.error('Error loading cart from database:', error);
-          // Fall back to local storage if API fails
-          loadFromLocalStorage();
         }
-      } else {
-        // Load cart from localStorage for guest users
-        loadFromLocalStorage();
-      }
-      
+      } 
+      loadFromLocalStorage();
       setLoading(false);
     };
-
     loadCart();
   }, [isAuthenticated, user]);
 
@@ -40,15 +32,13 @@ export const CartProvider = ({ children }) => {
   useEffect(() => {
     if (!loading) {
       if (isAuthenticated) {
-        // Save to database for authenticated users
         saveCartToServer(cartItems)
           .catch(error => console.error('Error saving cart to database:', error));
       } else {
-        // Save to localStorage for guest users
         localStorage.setItem(LOCAL_STORAGE_CART_KEY, JSON.stringify(cartItems));
       }
     }
-  }, [cartItems, isAuthenticated, loading]);
+  }, [cartItems, isAuthenticated]);
 
   const fetchCartFromServer = async () => {
     try {
@@ -92,58 +82,51 @@ export const CartProvider = ({ children }) => {
     
     try {
       const cartData = items.map(item => ({
-        product_id: item.id,
-        quantity: item.quantite
+        product_id: parseInt(item.id),
+        quantity: parseInt(item.quantite)
       }));
+      // items.foreach(item => console.log(item));
+      console.log('Sending to server:', cartData );
       
-      await api.post('/v2/cart/add', { items: cartData });
+      const response = await api.post('/v2/cart/add', { 
+        cartData 
+      });
+      
+      console.log('Server response:', response.data);
+      return response;
     } catch (error) {
-      console.error("Error saving cart to server:", error);
+      console.error("Error saving cart to server:", error.response?.data || error);
       throw error;
     }
   };
 
-  // Function to merge carts when user logs in
+  // merge carts 
   const mergeCartsOnLogin = async () => {
     try {
-      // Get the local cart
       const localCart = loadFromLocalStorage();
-      
       if (localCart.length === 0) return;
-      
-      // Get the server cart
       const serverCart = await fetchCartFromServer();
-      
-      // Merge the carts (only add items not already in server cart)
       const mergedCart = [...serverCart];
       let hasNewItems = false;
-      
       localCart.forEach(localItem => {
         const existingItem = mergedCart.find(item => item.id === localItem.id);
         if (existingItem) {
-          // Item exists, update quantity if local quantity is higher
           if (localItem.quantite > existingItem.quantite) {
             existingItem.quantite = localItem.quantite;
             hasNewItems = true;
           }
         } else {
-          // Item doesn't exist, add it
           mergedCart.push(localItem);
           hasNewItems = true;
         }
       });
       
       if (hasNewItems) {
-        // Save the merged cart to server
         await saveCartToServer(mergedCart);
         setCartItems(mergedCart);
-        
-        // Clear local storage cart after successful merge
         localStorage.removeItem(LOCAL_STORAGE_CART_KEY);
-        
         return { success: true, message: "Votre panier local a été synchronisé avec votre compte" };
       }
-      
       return { success: true, message: "Aucun nouvel article à synchroniser" };
     } catch (error) {
       console.error("Error during cart merging:", error);
