@@ -5,7 +5,6 @@ import { cartService } from '../api/cartService';
 const CartContext = createContext();
 
 export const CartProvider = ({ children }) => {
-
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -15,12 +14,8 @@ export const CartProvider = ({ children }) => {
     error: null,
   });
   
-  // Auth context
   const { isAuthenticated, user } = useAuth();
 
-
-  
-  // cart load
   useEffect(() => {
     const loadCart = async () => {
       setLoading(true);
@@ -53,9 +48,6 @@ export const CartProvider = ({ children }) => {
     loadCart();
   }, [isAuthenticated, user]);
 
-
-  
-  // Save cart items whenever they change
   useEffect(() => {
     if (loading) return;
     
@@ -87,16 +79,14 @@ export const CartProvider = ({ children }) => {
     syncCart();
   }, [cartItems, isAuthenticated, loading]);
 
- 
-  
-
   const addToCart = useCallback((product, quantity = 1) => {
     if (!product || !product.id) {
       console.error('Invalid product object', product);
       return;
     }
     
-    if (quantity <= 0) {
+    const parsedQuantity = parseInt(quantity, 10);
+    if (isNaN(parsedQuantity) || parsedQuantity <= 0) {
       console.error('Invalid quantity', quantity);
       return;
     }
@@ -105,37 +95,38 @@ export const CartProvider = ({ children }) => {
       const existingItemIndex = prevItems.findIndex(item => item.id === product.id);
       
       if (existingItemIndex >= 0) {
-        // Product already in cart - update quantity
         const newItems = [...prevItems];
         newItems[existingItemIndex] = {
           ...newItems[existingItemIndex],
-          quantite: newItems[existingItemIndex].quantite + quantity
+          quantite: parsedQuantity
         };
         return newItems;
       } else {
-        // Product not in cart - add new item
         return [...prevItems, {
           id: product.id,
           nom: product.title || product.name || product.nom,
           prix: parseFloat(product.currentPrice?.replace('$', '')) || 
                 parseFloat(product.price || 0) || 
                 product.prix || 0,
-          quantite: quantity,
+          quantite: parsedQuantity,
           image: product.imageUrl || product.image || '/api/placeholder/250/180'
         }];
       }
     });
   }, []);
 
-
   const updateQuantity = useCallback((productId, quantityOrOptions) => {
     if (!productId) return;
     
-    const options = typeof quantityOrOptions === 'object' 
-      ? quantityOrOptions 
-      : { delta: quantityOrOptions };
+    const isSimpleDelta = typeof quantityOrOptions === 'number';
+    const delta = isSimpleDelta ? parseInt(quantityOrOptions, 10) : 0;
     
-    const { delta, quantity, absolute = false, removeIfZero = true } = options;
+    const options = !isSimpleDelta ? quantityOrOptions : {};
+    const { 
+      quantity, 
+      absolute = false, 
+      removeIfZero = true 
+    } = options;
 
     setCartItems(prevItems => {
       const itemIndex = prevItems.findIndex(item => item.id === productId);
@@ -144,19 +135,22 @@ export const CartProvider = ({ children }) => {
       const newItems = [...prevItems];
       const currentItem = newItems[itemIndex];
       
-      // Calculate new quantity based on parameters
-      let newQuantity = absolute ? quantity : currentItem.quantite + (delta || 0);
+      let newQuantity;
       
-      // Apply minimum quantity limit
-      if (newQuantity <= 0) {
-        return removeIfZero 
-          ? newItems.filter(item => item.id !== productId) 
-          : newItems.map(item => 
-              item.id === productId ? { ...item, quantite: 1 } : item
-            );
+      if (isSimpleDelta) {
+        newQuantity = currentItem.quantite + delta;
+      } else if (absolute) {
+        newQuantity = parseInt(quantity, 10);
       }
       
-      // Update the item with new quantity
+      if (newQuantity <= 0) {
+        if (removeIfZero) {
+          return newItems.filter(item => item.id !== productId);
+        } else {
+          newQuantity = 1;
+        }
+      }
+      
       newItems[itemIndex] = {
         ...currentItem,
         quantite: newQuantity
@@ -166,11 +160,9 @@ export const CartProvider = ({ children }) => {
     });
   }, []);
 
-
   const removeFromCart = useCallback(async (productId) => {
     if (!productId) return;
     
-    // Remove from local state
     setCartItems(prevItems => prevItems.filter(item => item.id !== productId));
     
     if (isAuthenticated) {
@@ -182,12 +174,9 @@ export const CartProvider = ({ children }) => {
     }
   }, [isAuthenticated]);
 
-
   const clearCart = useCallback(async () => {
-    // Clear local state first
     setCartItems([]);
     
-    // Handle persistence based on auth state
     if (!isAuthenticated) {
       cartService.clearLocalStorage();
     } else {
@@ -203,7 +192,6 @@ export const CartProvider = ({ children }) => {
     try {
       setLoading(true);
       
-      // Load both carts
       const localCart = cartService.loadFromLocalStorage();
       if (localCart.length === 0) {
         setLoading(false);
@@ -212,7 +200,6 @@ export const CartProvider = ({ children }) => {
       
       const serverCart = await cartService.fetchFromServer();
       
-      // Merge with conflict resolution strategy: take max quantity
       const mergedCart = [...serverCart];
       let hasNewItems = false;
       
@@ -220,25 +207,20 @@ export const CartProvider = ({ children }) => {
         const existingItemIndex = mergedCart.findIndex(item => item.id === localItem.id);
         
         if (existingItemIndex >= 0) {
-          // Conflict resolution: take max quantity
           if (localItem.quantite > mergedCart[existingItemIndex].quantite) {
             mergedCart[existingItemIndex].quantite = localItem.quantite;
             hasNewItems = true;
           }
         } else {
-          // New item from local cart
           mergedCart.push(localItem);
           hasNewItems = true;
         }
       });
       
-      // If we have changes to apply
       if (hasNewItems) {
-        // Update state and sync
         setCartItems(mergedCart);
         await cartService.saveToServer(mergedCart);
         
-        // Clear local storage as it's now synced
         cartService.clearLocalStorage();
         
         setLoading(false);
@@ -257,31 +239,22 @@ export const CartProvider = ({ children }) => {
     }
   }, []);
 
-
-  
-  // Calculate totals
   const totalItems = cartItems.reduce((sum, item) => sum + item.quantite, 0);
   const totalPrice = cartItems.reduce((sum, item) => sum + (item.prix * item.quantite), 0);
 
   const contextValue = {
-
     cartItems,
     loading,
     error,
     syncStatus,
-
     addToCart,
     updateQuantity,
     removeFromCart,
     clearCart,
-    
- 
     mergeCartsOnLogin,
-    
-   
     totalItems,
     totalPrice,
- 
+    operations: {}
   };
 
   return (
@@ -291,4 +264,10 @@ export const CartProvider = ({ children }) => {
   );
 };
 
-export const useCart = () => useContext(CartContext);
+export const useCart = () => {
+  const context = useContext(CartContext);
+  if (!context) {
+    throw new Error('useCart must be used within a CartProvider');
+  }
+  return context;
+};

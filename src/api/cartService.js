@@ -2,14 +2,7 @@ import api from './axios';
 
 const LOCAL_STORAGE_CART_KEY = 'gameexpress-cart';
 
-// Cart operations
-// API calls 
-// LocalStorage
 export const cartService = {
-
-
-
-    // Load from db
   async fetchFromServer() {
     try {
       const response = await api.get('/v2/cart/items');
@@ -29,7 +22,6 @@ export const cartService = {
     }
   },
 
-  //Load from local storage
   loadFromLocalStorage() {
     try {
       const savedCart = localStorage.getItem(LOCAL_STORAGE_CART_KEY);
@@ -40,7 +32,6 @@ export const cartService = {
     }
   },
 
-//Save to local storage
   saveToLocalStorage(items) {
     try {
       localStorage.setItem(LOCAL_STORAGE_CART_KEY, JSON.stringify(items));
@@ -48,43 +39,64 @@ export const cartService = {
       console.error("Error saving cart to localStorage:", error);
     }
   },
-//Clear from local 
+
   clearLocalStorage() {
     localStorage.removeItem(LOCAL_STORAGE_CART_KEY);
   },
 
- //add / update from db
   async addOrUpdateItemOnServer(item) {
     try {
-      const response = await api.post('/v2/cart/add', { 
+      // Use the appropriate endpoint and parameters to ensure quantities are treated as absolute values
+      // Set replace=true to ensure the server replaces the quantity instead of adding to it
+      const response = await api.post('/v2/cart/update', { 
         product_id: item.id,
-        quantity: item.quantite
+        quantity: item.quantite,
+        replace: true  // This tells the server to replace the quantity rather than add to it
       });
       return response;
     } catch (error) {
-      console.error("Error adding item to server cart:", error);
-      throw error;
+      // If the endpoint doesn't support the replace flag, try an alternative approach
+      try {
+        // First remove the item completely
+        await this.removeItemFromServer(item.id);
+        
+        // Then add it with the new quantity
+        const response = await api.post('/v2/cart/add', { 
+          product_id: item.id,
+          quantity: item.quantite
+        });
+        return response;
+      } catch (secondError) {
+        console.error("Error updating item in server cart:", secondError);
+        throw secondError;
+      }
     }
   },
-
 
   async saveToServer(items) {
     try {
       if (!items.length) return null;
       
-      const promises = items.map(item => 
-        this.addOrUpdateItemOnServer(item)
-      );
+      // Clear the cart first to ensure we're starting fresh
+      await this.clearServerCart();
       
-      const responses = await Promise.all(promises);
-      return responses[responses.length - 1];
+      // Now add each item with its correct quantity
+      let lastResponse = null;
+      
+      for (const item of items) {
+        lastResponse = await api.post('/v2/cart/add', { 
+          product_id: item.id,
+          quantity: item.quantite
+        });
+      }
+      
+      return lastResponse;
     } catch (error) {
       console.error("Error saving cart to server:", error);
       throw error;
     }
   },
   
-//remove item
   async removeItemFromServer(productId) {
     try {
       const response = await api.delete(`/v2/cart/remove/${productId}`);
@@ -95,7 +107,6 @@ export const cartService = {
     }
   },
   
-//clear cart
   async clearServerCart() {
     try {
       const response = await api.post('/v2/cart/clear');
