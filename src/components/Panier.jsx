@@ -20,6 +20,14 @@ import ShoppingCartCheckoutIcon from '@mui/icons-material/ShoppingCartCheckout';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 
+// Helper function for consistent currency formatting
+const formatCurrency = (amount, currency = '€') => {
+  return new Intl.NumberFormat('fr-FR', { 
+    style: 'currency', 
+    currency: currency === '€' ? 'EUR' : 'USD' 
+  }).format(amount);
+};
+
 export default function Panier({ onClose }) {
   const [snackbar, setSnackbar] = useState({
     open: false,
@@ -41,11 +49,11 @@ export default function Panier({ onClose }) {
   const tva = totalPrice * 0.2;
   const total = totalPrice + tva;
 
-  const changerQuantite = (id, delta) => {
+  const handleChangeQuantity = (id, delta) => {
     updateQuantity(id, delta);
   };
 
-  const supprimerProduit = (id) => {
+  const handleRemoveProduct = (id) => {
     removeFromCart(id);
   };
 
@@ -86,9 +94,9 @@ export default function Panier({ onClose }) {
           </Box>
         ) : (
           <>
-            {cartItems.map((produit) => (
+            {cartItems.map((product) => (
               <Box 
-                key={produit.id} 
+                key={product.id} 
                 mb={2}
                 sx={{
                   p: 2,
@@ -100,28 +108,28 @@ export default function Panier({ onClose }) {
               >
                 <Stack direction="row" spacing={2} alignItems="center">
                   <Avatar 
-                    src={produit.image} 
+                    src={product.image} 
                     variant="rounded" 
                     sx={{ width: 64, height: 64 }} 
                   />
                   <Box flexGrow={1}>
-                    <Typography fontWeight="bold">{produit.nom}</Typography>
+                    <Typography fontWeight="bold">{product.nom}</Typography>
                     <Typography color="primary.main" fontWeight="medium">
-                      {produit.prix}€
+                      {formatCurrency(product.prix)}
                     </Typography>
                   </Box>
                   <Box>
                     <Box display="flex" alignItems="center" mb={1}>
                       <IconButton 
-                        onClick={() => changerQuantite(produit.id, -1)}
+                        onClick={() => handleChangeQuantity(product.id, -1)}
                         size="small"
                         sx={{ backgroundColor: '#e0e0e0' }}
                       >
                         <RemoveIcon fontSize="small" />
                       </IconButton>
-                      <Typography mx={1} fontWeight="medium">{produit.quantite}</Typography>
+                      <Typography mx={1} fontWeight="medium">{product.quantite}</Typography>
                       <IconButton 
-                        onClick={() => changerQuantite(produit.id, 1)}
+                        onClick={() => handleChangeQuantity(product.id, 1)}
                         size="small"
                         sx={{ backgroundColor: '#e0e0e0' }}
                       >
@@ -130,7 +138,7 @@ export default function Panier({ onClose }) {
                     </Box>
                     <Tooltip title="Supprimer">
                       <IconButton 
-                        onClick={() => supprimerProduit(produit.id)} 
+                        onClick={() => handleRemoveProduct(product.id)} 
                         size="small"
                         color="error"
                       >
@@ -147,11 +155,11 @@ export default function Panier({ onClose }) {
             <Box sx={{ px: 2 }}>
               <Box display="flex" justifyContent="space-between" mb={1}>
                 <Typography>Sous-total</Typography>
-                <Typography>{totalPrice.toFixed(2)}€</Typography>
+                <Typography>{formatCurrency(totalPrice)}</Typography>
               </Box>
               <Box display="flex" justifyContent="space-between" mb={1}>
                 <Typography>TVA (20%)</Typography>
-                <Typography>{tva.toFixed(2)}€</Typography>
+                <Typography>{formatCurrency(tva)}</Typography>
               </Box>
               <Box 
                 display="flex" 
@@ -161,7 +169,7 @@ export default function Panier({ onClose }) {
                 sx={{ borderTop: '1px dashed #ccc', borderBottom: '1px dashed #ccc' }}
               >
                 <Typography fontWeight="bold">Total</Typography>
-                <Typography fontWeight="bold" color="primary.main">{total.toFixed(2)}€</Typography>
+                <Typography fontWeight="bold" color="primary.main">{formatCurrency(total)}</Typography>
               </Box>
 
               <Stack direction="row" spacing={2} mt={4} mb={2}>
