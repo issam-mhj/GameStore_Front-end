@@ -11,7 +11,8 @@ import Unauthorized from './pages/Unauthorized';
 import Layout from './components/Layout';
 import Categories from './pages/Categories';
 import Products from './pages/Products';
-import ProductGrid from './pages/ProductLists';
+import ProductsPage from './pages/ProductsPage';
+
 function App() {
   return (
     <Router>
@@ -37,7 +38,7 @@ function App() {
                 <Route path="category" element={<Categories />} />
               </Route>
               <Route>
-                <Route path="productlist" element={<ProductGrid/>} />
+                <Route path="productlist" element={<ProductsPage />} />
               </Route>
               
               <Route element={<ProtectedRoute roles={['product_manager', 'super_admin']} />}>
